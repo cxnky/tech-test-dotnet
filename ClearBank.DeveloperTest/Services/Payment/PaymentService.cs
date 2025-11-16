@@ -2,7 +2,7 @@
 using ClearBank.DeveloperTest.Types;
 using System.Configuration;
 
-namespace ClearBank.DeveloperTest.Services
+namespace ClearBank.DeveloperTest.Services.Payment
 {
     public class PaymentService : IPaymentService
     {
