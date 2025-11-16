@@ -10,7 +10,7 @@ namespace ClearBank.DeveloperTest.Services.Payment
     {
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
-            var dataStore = accountDataStoreFactory.CreateDataStore();
+            var dataStore = accountDataStoreFactory.GetAccountDataStore();
             var account = dataStore.GetAccount(request.DebtorAccountNumber);
 
             var validator = validators.FirstOrDefault(v => v.Scheme == request.PaymentScheme);

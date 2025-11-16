@@ -2,6 +2,6 @@
 {
     public interface IAccountDataStoreFactory
     {
-        IAccountDataStore CreateDataStore();
+        public IAccountDataStore GetAccountDataStore();
     }
 }

@@ -2,6 +2,6 @@
 {
     public interface IConfigurationService
     {
-        string GetDataStoreType();
+        public string GetDataStoreType();
     }
 }
