@@ -1,39 +1,52 @@
-﻿using ClearBank.DeveloperTest.Data;
+﻿using ClearBank.DeveloperTest.Services.DataStore.DataFactory;
 using ClearBank.DeveloperTest.Types;
-using System.Configuration;
+using ClearBank.DeveloperTest.Validation;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ClearBank.DeveloperTest.Services.Payment
 {
     public class PaymentService : IPaymentService
     {
+        private readonly IAccountDataStoreFactory _accountDataStoreFactory;
+        private readonly IEnumerable<IPaymentSchemeValidator> _validators;
+
+        public PaymentService(IAccountDataStoreFactory accountDataStoreFactory, IEnumerable<IPaymentSchemeValidator> validators)
+        {
+            _accountDataStoreFactory = accountDataStoreFactory;
+            _validators = validators;
+        }
+
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
-            // TODO: Use refactored data store factory here
-            var account = new Account();
-            var dataStoreType = "";
+            var dataStore = _accountDataStoreFactory.CreateDataStore();
+            var account = dataStore.GetAccount(request.DebtorAccountNumber);
 
-            var result = new MakePaymentResult();
-            result.Success = true;
-            
-            // TODO: Use refactored validators here
-
-            if (result.Success)
+            var validator = _validators.FirstOrDefault(v => v.Scheme == request.PaymentScheme);
+            if (validator is null)
             {
-                account.Balance -= request.Amount;
-
-                if (dataStoreType == "Backup")
+                return new MakePaymentResult
                 {
-                    var accountDataStore = new BackupAccountDataStore();
-                    accountDataStore.UpdateAccount(account);
-                }
-                else
+                    Success = false
+                };
+            }
+            
+            var isValid = validator.IsPaymentAllowed(account, request);
+            if (!isValid)
+            {
+                return new MakePaymentResult
                 {
-                    var accountDataStore = new AccountDataStore();
-                    accountDataStore.UpdateAccount(account);
-                }
+                    Success = false
+                };
             }
 
-            return result;
+            account.Balance -= request.Amount;
+            dataStore.UpdateAccount(account);
+
+            return new MakePaymentResult
+            {
+                Success = true
+            };
         }
     }
 }
